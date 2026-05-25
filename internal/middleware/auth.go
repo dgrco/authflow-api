@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/dgrco/autoflow/internal/ctxkeys"
 	"github.com/dgrco/autoflow/internal/response"
 	"github.com/dgrco/autoflow/pkg/auth"
 )
 
-type contextKey string
-const UserIDKey contextKey = "userID"
+const UserIDKey ctxkeys.StringContextKey = "userID"
 
 func AuthMiddleware(jwtSecret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
