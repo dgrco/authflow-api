@@ -28,7 +28,6 @@ type Shift struct {
 }
 
 type ShiftUpdate struct {
-	UserID    *string
 	Status    *ShiftStatus
 	StartTime *time.Time
 	EndTime   *time.Time
@@ -40,10 +39,12 @@ type ShiftRepository interface {
 		userID *string,
 		locationID, positionID string,
 		status ShiftStatus,
-		StartTime, EndTime time.Time,
+		startTime, endTime time.Time,
 	) (Shift, error)
 	GetShiftByID(ctx context.Context, id string) (Shift, error)
 	GetShiftsByLocationID(ctx context.Context, locationID string) ([]Shift, error)
 	UpdateShiftByID(ctx context.Context, id string, update ShiftUpdate) error
+	UnassignShift(ctx context.Context, id string) error
+	CancelShift(ctx context.Context, id string) error
 	DeleteShift(ctx context.Context, id string) error
 }

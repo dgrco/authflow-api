@@ -18,12 +18,15 @@ func newUpdateBuilder() *updateBuilder {
 	return &updateBuilder{argIdx: 1}
 }
 
+// Adds a new "set clause" column and appends its value to the args slice that is returned from Build()
 func (b *updateBuilder) Add(column string, value any) {
 	b.args = append(b.args, value)
 	b.setClauses = append(b.setClauses, fmt.Sprintf("%s = $%d", column, b.argIdx))
 	b.argIdx++
 }
 
+// Build builds the final query and returns the args slice
+// NOTE: this adds the updated_at column automatically!
 func (b *updateBuilder) Build(table, idColumn string, id any) (string, []any) {
 	b.Add("updated_at", time.Now())
 	b.args = append(b.args, id)
