@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dgrco/autoflow/internal/domain"
+	"github.com/dgrco/quikslate/internal/domain"
 	"github.com/jackc/pgx/v5"
 )
 
 // NOTE: Projections are explicit even when they are * (all) for clarity in Scan order
 
-func (s *PgRepository) CreateRefreshToken(ctx context.Context, userID, token string, expiresAt time.Time) (domain.RefreshToken, error) {
+func (r *PgRepository) CreateRefreshToken(ctx context.Context, userID, token string, expiresAt time.Time) (domain.RefreshToken, error) {
 	query := `
 		INSERT INTO refresh_tokens (user_id, token, expires_at)
 		VALUES ($1, $2, $3)
@@ -20,7 +20,7 @@ func (s *PgRepository) CreateRefreshToken(ctx context.Context, userID, token str
 	`
 
 	var t domain.RefreshToken
-	err := s.pool.QueryRow(ctx, query, userID, token, expiresAt).Scan(
+	err := r.pool.QueryRow(ctx, query, userID, token, expiresAt).Scan(
 		&t.ID,
 		&t.UserID,
 		&t.Token,
@@ -34,7 +34,7 @@ func (s *PgRepository) CreateRefreshToken(ctx context.Context, userID, token str
 	return t, nil
 }
 
-func (s *PgRepository) GetRefreshToken(ctx context.Context, token string) (domain.RefreshToken, error) {
+func (r *PgRepository) GetRefreshToken(ctx context.Context, token string) (domain.RefreshToken, error) {
 	query := `
 		SELECT id, user_id, token, expires_at, created_at
 		FROM refresh_tokens
@@ -42,7 +42,7 @@ func (s *PgRepository) GetRefreshToken(ctx context.Context, token string) (domai
 	`
 
 	var t domain.RefreshToken
-	err := s.pool.QueryRow(ctx, query, token).Scan(
+	err := r.pool.QueryRow(ctx, query, token).Scan(
 		&t.ID,
 		&t.UserID,
 		&t.Token,
@@ -59,13 +59,13 @@ func (s *PgRepository) GetRefreshToken(ctx context.Context, token string) (domai
 	return t, nil
 }
 
-func (s *PgRepository) DeleteRefreshToken(ctx context.Context, token string) error {
+func (r *PgRepository) DeleteRefreshToken(ctx context.Context, token string) error {
 	query := `
 		DELETE FROM refresh_tokens
 		WHERE token = $1
 	`
 
-	cmdTag, err := s.pool.Exec(ctx, query, token)
+	cmdTag, err := r.pool.Exec(ctx, query, token)
 	if err != nil {
 		return fmt.Errorf("failed to delete refresh token: %w", err)
 	}

@@ -5,23 +5,32 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dgrco/autoflow/internal/domain"
+	"github.com/dgrco/quikslate/internal/domain"
 	"github.com/jackc/pgx/v5"
 )
 
 // Implement UserRepository interface for PgRepository
 
-func (s *PgRepository) CreateUser(ctx context.Context, email, passwordHash string) (domain.User, error) {
+func (r *PgRepository) CreateUser(ctx context.Context, email, passwordHash string) (domain.User, error) {
 	query := `
 		INSERT INTO users (email, password)
 		VALUES ($1, $2)
-		RETURNING id, email, created_at, updated_at
+		RETURNING id, email, password, 
+			invite_token, 
+			invite_expires_at, 
+			invite_accepted_at, 
+			created_at, 
+			updated_at
 	`
 
 	var u domain.User
-	err := s.pool.QueryRow(ctx, query, email, passwordHash).Scan(
+	err := r.pool.QueryRow(ctx, query, email, passwordHash).Scan(
 		&u.ID,
 		&u.Email,
+		&u.Password,
+		&u.InviteToken,
+		&u.InviteExpiresAt,
+		&u.InviteAcceptedAt,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -32,18 +41,21 @@ func (s *PgRepository) CreateUser(ctx context.Context, email, passwordHash strin
 	return u, nil
 }
 
-func (s *PgRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+func (r *PgRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	query := `
-		SELECT id, email, password, created_at, updated_at
+		SELECT id, email, password, invite_token, invite_expires_at, invite_accepted_at, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
 
 	var u domain.User
-	err := s.pool.QueryRow(ctx, query, email).Scan(
+	err := r.pool.QueryRow(ctx, query, email).Scan(
 		&u.ID,
 		&u.Email,
 		&u.Password,
+		&u.InviteToken,
+		&u.InviteExpiresAt,
+		&u.InviteAcceptedAt,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -57,18 +69,21 @@ func (s *PgRepository) GetUserByEmail(ctx context.Context, email string) (domain
 	return u, nil
 }
 
-func (s *PgRepository) GetUserById(ctx context.Context, id string) (domain.User, error) {
+func (r *PgRepository) GetUserById(ctx context.Context, id string) (domain.User, error) {
 	query := `
-		SELECT id, email, password, created_at, updated_at
+		SELECT id, email, password, invite_token, invite_expires_at, invite_accepted_at, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
 
 	var u domain.User
-	err := s.pool.QueryRow(ctx, query, id).Scan(
+	err := r.pool.QueryRow(ctx, query, id).Scan(
 		&u.ID,
 		&u.Email,
 		&u.Password,
+		&u.InviteToken,
+		&u.InviteExpiresAt,
+		&u.InviteAcceptedAt,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -82,13 +97,13 @@ func (s *PgRepository) GetUserById(ctx context.Context, id string) (domain.User,
 	return u, nil
 }
 
-func (s *PgRepository) DeleteUser(ctx context.Context, id string) error {
+func (r *PgRepository) DeleteUser(ctx context.Context, id string) error {
 	query := `
 		DELETE FROM users
 		WHERE id = $1
 	`
 
-	_, err := s.pool.Exec(ctx, query, id)
+	_, err := r.pool.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}
