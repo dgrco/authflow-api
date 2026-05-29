@@ -8,4 +8,5 @@ type Repo interface {
 	LocationRepository
 	PositionRepository
 	ShiftRepository
+	UserRoleRepository
 }
