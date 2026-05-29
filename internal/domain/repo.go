@@ -9,4 +9,5 @@ type Repo interface {
 	PositionRepository
 	ShiftRepository
 	UserRoleRepository
+	EmployeePositionRepository
 }
